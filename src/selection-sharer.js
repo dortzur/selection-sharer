@@ -261,7 +261,7 @@
       var text = self.textSelection.trim();
       var email = {};
       email.subject = encodeURIComponent($('h1:first').text());
-      var siteName=$('meta[property="og:site_name"]').attr('content');
+      var siteName=$('meta[property="og:site_name"]').attr('content') ||"";
       email.body = encodeURIComponent("“"+text+"”")+"%0D%0A%0D%0AFrom: "+siteName+"%0D%0A"+window.location.href;
       $(this).attr("href","mailto:?subject="+email.subject+"&body="+email.body);
       self.hide();
