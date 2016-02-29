@@ -52,63 +52,64 @@
       range.detach();
       return direction;
     };
-
-    this.showPopunder = function() {
-      self.popunder = self.popunder || document.getElementById('selectionSharerPopunder');
-
-      var sel = window.getSelection();
-      var selection = self.getSelectionText(sel);
-
-      if(sel.isCollapsed || selection.length < 10 || !selection.match(/ /))
-        return self.hidePopunder();
-
-      if(self.popunder.classList.contains("fixed")) {
-          self.popunder.style.bottom = 0;
-          return self.popunder.style.bottom;
-      }
-
-      var range = sel.getRangeAt(0);
-      var node = range.endContainer.parentNode; // The <p> where the selection ends
-
-      // If the popunder is currently displayed
-      if(self.popunder.classList.contains('show')) {
-        // If the popunder is already at the right place, we do nothing
-        if(Math.ceil(self.popunder.getBoundingClientRect().top) == Math.ceil(node.getBoundingClientRect().bottom))
-          return;
-
-        // Otherwise, we first hide it and the we try again
-        return self.hidePopunder(self.showPopunder);
-      }
-
-      if(node.nextElementSibling) {
-        // We need to push down all the following siblings
-        self.pushSiblings(node);
-      }
-      else {
-        // We need to append a new element to push all the content below
-        if(!self.placeholder) {
-          self.placeholder = document.createElement('div');
-          self.placeholder.className = 'selectionSharerPlaceholder';
-        }
-
-        // If we add a div between two <p> that have a 1em margin, the space between them
-        // will become 2x 1em. So we give the placeholder a negative margin to avoid that
-        var margin = window.getComputedStyle(node).marginBottom;
-        self.placeholder.style.height = margin;
-        self.placeholder.style.marginBottom = (-2 * parseInt(margin,10))+'px';
-        node.parentNode.insertBefore(self.placeholder);
-      }
-
-      // scroll offset
-      var offsetTop = window.pageYOffset + node.getBoundingClientRect().bottom;
-      self.popunder.style.top = Math.ceil(offsetTop)+'px';
-
-      setTimeout(function() {
-        if(self.placeholder) self.placeholder.classList.add('show');
-        self.popunder.classList.add('show');
-      },0);
-
+    this.showPopunder = function noop() {
     };
+    //this.showPopunder = function() {
+    //  self.popunder = self.popunder || document.getElementById('selectionSharerPopunder');
+    //
+    //  var sel = window.getSelection();
+    //  var selection = self.getSelectionText(sel);
+    //
+    //  if(sel.isCollapsed || selection.length < 10 || !selection.match(/ /))
+    //    return self.hidePopunder();
+    //
+    //  if(self.popunder.classList.contains("fixed")) {
+    //      self.popunder.style.bottom = 0;
+    //      return self.popunder.style.bottom;
+    //  }
+    //
+    //  var range = sel.getRangeAt(0);
+    //  var node = range.endContainer.parentNode; // The <p> where the selection ends
+    //
+    //  // If the popunder is currently displayed
+    //  if(self.popunder.classList.contains('show')) {
+    //    // If the popunder is already at the right place, we do nothing
+    //    if(Math.ceil(self.popunder.getBoundingClientRect().top) == Math.ceil(node.getBoundingClientRect().bottom))
+    //      return;
+    //
+    //    // Otherwise, we first hide it and the we try again
+    //    return self.hidePopunder(self.showPopunder);
+    //  }
+    //
+    //  if(node.nextElementSibling) {
+    //    // We need to push down all the following siblings
+    //    self.pushSiblings(node);
+    //  }
+    //  else {
+    //    // We need to append a new element to push all the content below
+    //    if(!self.placeholder) {
+    //      self.placeholder = document.createElement('div');
+    //      self.placeholder.className = 'selectionSharerPlaceholder';
+    //    }
+    //
+    //    // If we add a div between two <p> that have a 1em margin, the space between them
+    //    // will become 2x 1em. So we give the placeholder a negative margin to avoid that
+    //    var margin = window.getComputedStyle(node).marginBottom;
+    //    self.placeholder.style.height = margin;
+    //    self.placeholder.style.marginBottom = (-2 * parseInt(margin,10))+'px';
+    //    node.parentNode.insertBefore(self.placeholder);
+    //  }
+    //
+    //  // scroll offset
+    //  var offsetTop = window.pageYOffset + node.getBoundingClientRect().bottom;
+    //  self.popunder.style.top = Math.ceil(offsetTop)+'px';
+    //
+    //  setTimeout(function() {
+    //    if(self.placeholder) self.placeholder.classList.add('show');
+    //    self.popunder.classList.add('show');
+    //  },0);
+    //
+    //};
 
     this.pushSiblings = function(el) {
       while(el=el.nextElementSibling) { el.classList.add('selectionSharer'); el.classList.add('moveDown'); }
@@ -250,7 +251,8 @@
     this.shareLinkedIn = function(e) {
       e.preventDefault();
       var text = self.htmlSelection.replace(/<(p|blockquote)[^>]*>/ig, "\n").replace(/<\/p>|  /ig, "").trim();
-      var url = "https://www.linkedin.com/shareArticle?mini=true&url=" + encodeURIComponent(self.url2share) + "&title=" + encodeURIComponent($('h1:first').text())+"&summary="+encodeURIComponent("“"+text+"”");
+      var summary=$('meta[property="og:description"]').attr('content') ||"";
+      var url = "https://www.linkedin.com/shareArticle?mini=true&url=" + encodeURIComponent(self.url2share) + "&summary=" + encodeURIComponent($('h1:first').text())+"&title="+encodeURIComponent("“"+text+"”");
       var w = 640, h=440;
       var left = (screen.width/2)-(w/2);
       var top = (screen.height/2)-(h/2)-100;
@@ -260,9 +262,9 @@
     this.shareEmail = function(e) {
       var text = self.textSelection.trim();
       var email = {};
-      email.subject = encodeURIComponent($('h1:first').text());
-      var siteName=$('meta[property="og:site_name"]').attr('content') ||"";
-      email.body = encodeURIComponent("“"+text+"”")+"%0D%0A%0D%0AFrom: "+siteName+"%0D%0A"+window.location.href;
+      email.subject = encodeURIComponent("“" + text + "”");
+      var siteName = $('meta[property="og:site_name"]').attr('content') || "";
+      email.body ="From:%0D%0A" + encodeURIComponent($('h1:first').text()) + "%0D%0A" + window.location.href;
       $(this).attr("href","mailto:?subject="+email.subject+"&body="+email.body);
       self.hide();
       return true;
