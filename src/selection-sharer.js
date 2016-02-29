@@ -249,8 +249,8 @@
 
     this.shareLinkedIn = function(e) {
       e.preventDefault();
-      var text = self.htmlSelection.replace(/<p[^>]*>/ig, "\n").replace(/<\/p>|  /ig, "").trim();
-      var url = "https://www.linkedin.com/shareArticle?mini=true&url=" + encodeURIComponent(self.url2share) + "&title=" + encodeURIComponent(text);
+      var text = self.htmlSelection.replace(/<(p|blockquote)[^>]*>/ig, "\n").replace(/<\/p>|  /ig, "").trim();
+      var url = "https://www.linkedin.com/shareArticle?mini=true&url=" + encodeURIComponent(self.url2share) + "&title=" + encodeURIComponent($('h1:first').text())+"&summary="+encodeURIComponent("“"+text+"”");
       var w = 640, h=440;
       var left = (screen.width/2)-(w/2);
       var top = (screen.height/2)-(h/2)-100;
@@ -258,10 +258,11 @@
     };
 
     this.shareEmail = function(e) {
-      var text = self.textSelection.replace(/<p[^>]*>/ig,'\n').replace(/<\/p>|  /ig,'').trim();
+      var text = self.textSelection.trim();
       var email = {};
-      email.subject = encodeURIComponent("Quote from "+document.title);
-      email.body = encodeURIComponent("“"+text+"”")+"%0D%0A%0D%0AFrom: "+document.title+"%0D%0A"+window.location.href;
+      email.subject = encodeURIComponent($('h1:first').text());
+      var siteName=$('meta[property="og:site_name"]').attr('content');
+      email.body = encodeURIComponent("“"+text+"”")+"%0D%0A%0D%0AFrom: "+siteName+"%0D%0A"+window.location.href;
       $(this).attr("href","mailto:?subject="+email.subject+"&body="+email.body);
       self.hide();
       return true;
