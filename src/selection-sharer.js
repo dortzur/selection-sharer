@@ -52,92 +52,13 @@
       range.detach();
       return direction;
     };
-    this.showPopunder = function noop() {
-    };
-    //this.showPopunder = function() {
-    //  self.popunder = self.popunder || document.getElementById('selectionSharerPopunder');
-    //
-    //  var sel = window.getSelection();
-    //  var selection = self.getSelectionText(sel);
-    //
-    //  if(sel.isCollapsed || selection.length < 10 || !selection.match(/ /))
-    //    return self.hidePopunder();
-    //
-    //  if(self.popunder.classList.contains("fixed")) {
-    //      self.popunder.style.bottom = 0;
-    //      return self.popunder.style.bottom;
-    //  }
-    //
-    //  var range = sel.getRangeAt(0);
-    //  var node = range.endContainer.parentNode; // The <p> where the selection ends
-    //
-    //  // If the popunder is currently displayed
-    //  if(self.popunder.classList.contains('show')) {
-    //    // If the popunder is already at the right place, we do nothing
-    //    if(Math.ceil(self.popunder.getBoundingClientRect().top) == Math.ceil(node.getBoundingClientRect().bottom))
-    //      return;
-    //
-    //    // Otherwise, we first hide it and the we try again
-    //    return self.hidePopunder(self.showPopunder);
-    //  }
-    //
-    //  if(node.nextElementSibling) {
-    //    // We need to push down all the following siblings
-    //    self.pushSiblings(node);
-    //  }
-    //  else {
-    //    // We need to append a new element to push all the content below
-    //    if(!self.placeholder) {
-    //      self.placeholder = document.createElement('div');
-    //      self.placeholder.className = 'selectionSharerPlaceholder';
-    //    }
-    //
-    //    // If we add a div between two <p> that have a 1em margin, the space between them
-    //    // will become 2x 1em. So we give the placeholder a negative margin to avoid that
-    //    var margin = window.getComputedStyle(node).marginBottom;
-    //    self.placeholder.style.height = margin;
-    //    self.placeholder.style.marginBottom = (-2 * parseInt(margin,10))+'px';
-    //    node.parentNode.insertBefore(self.placeholder);
-    //  }
-    //
-    //  // scroll offset
-    //  var offsetTop = window.pageYOffset + node.getBoundingClientRect().bottom;
-    //  self.popunder.style.top = Math.ceil(offsetTop)+'px';
-    //
-    //  setTimeout(function() {
-    //    if(self.placeholder) self.placeholder.classList.add('show');
-    //    self.popunder.classList.add('show');
-    //  },0);
-    //
-    //};
+
+
 
     this.pushSiblings = function(el) {
       while(el=el.nextElementSibling) { el.classList.add('selectionSharer'); el.classList.add('moveDown'); }
     };
 
-    this.hidePopunder = function(cb) {
-      cb = cb || function() {};
-
-      if(self.popunder == "fixed") {
-        self.popunder.style.bottom = '-50px';
-        return cb();
-      }
-
-      self.popunder.classList.remove('show');
-      if(self.placeholder) self.placeholder.classList.remove('show');
-      // We need to push back up all the siblings
-      var els = document.getElementsByClassName('moveDown');
-      while(el=els[0]) {
-          el.classList.remove('moveDown');
-      }
-
-      // CSS3 transition takes 0.6s
-      setTimeout(function() {
-        if(self.placeholder) document.body.insertBefore(self.placeholder);
-        cb();
-      }, 600);
-
-    };
 
     this.show = function(e) {
       setTimeout(function() {
@@ -283,17 +204,6 @@
                        + '  <div class="selectionSharerPopover-clip"><span class="selectionSharerPopover-arrow"></span></div>'
                        + '</div>';
 
-      var popunderHTML = '<div id="selectionSharerPopunder" class="selectionSharer">'
-                       + '  <div id="selectionSharerPopunder-inner">'
-                       + '    <label>Share this selection</label>'
-                       + '    <ul>'
-                       + '      <li><a class="action tweet" href="" title="Share this selection on Twitter" target="_blank">Tweet</a></li>'
-                       + '      <li><a class="action facebook" href="" title="Share this selection on Facebook" target="_blank">Facebook</a></li>'
-                       + '      <li><a class="action linkedin" href="" title="Share this selection on LinkedIn" target="_blank">LinkedIn</a></li>'
-                       + '      <li><a class="action email" href="" title="Share this selection by email" target="_blank"><svg width="20" height="20"><path stroke="%23FFF" stroke-width="6" d="m16,25h82v60H16zl37,37q4,3 8,0l37-37M16,85l30-30m22,0 30,30"/></svg></a></li>'
-                       + '    </ul>'
-                       + '  </div>'
-                       + '</div>';
       self.$popover = $(popoverHTML);
       self.$popover.find('a.tweet').click(self.shareTwitter);
       self.$popover.find('a.facebook').click(self.shareFacebook);
@@ -301,12 +211,7 @@
       self.$popover.find('a.email').click(self.shareEmail);
       $('body').append(self.$popover);
 
-      self.$popunder = $(popunderHTML);
-      self.$popunder.find('a.tweet').click(self.shareTwitter);
-      self.$popunder.find('a.facebook').click(self.shareFacebook);
-      self.$popover.find('a.linkedin').click(self.shareLinkedIn);
-      self.$popunder.find('a.email').click(self.shareEmail);
-      $('body').append(self.$popunder);
+
 
       if (self.appId && self.url2share){
         $(".selectionSharer a.facebook").css('display','inline-block');
@@ -317,24 +222,9 @@
       if(typeof elements == 'string') elements = $(elements);
       self.$elements = elements instanceof $ ? elements : $(elements);
       self.$elements.mouseup(self.show).mousedown(self.hide).addClass("selectionShareable");
-
-      self.$elements.bind('touchstart', function(e) {
-        self.isMobile = true;
-      });
-
-      document.onselectionchange = self.selectionChanged;
     };
 
-    this.selectionChanged = function(e) {
-      if(!self.isMobile) return;
 
-      if(self.lastSelectionChanged) {
-        clearTimeout(self.lastSelectionChanged);
-      }
-      self.lastSelectionChanged = setTimeout(function() {
-        self.showPopunder(e);
-      }, 300);
-    };
 
     this.getPosition = function() {
       var supportPageOffset = window.pageXOffset !== undefined;
